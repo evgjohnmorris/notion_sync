@@ -54,7 +54,7 @@ npm test
 
 ## Community and Contributions
 
-We love open-source contributions! Whether you want to add an 8th domain, optimize the `generate-notion-tools.js` generator, or add TypeScript typings for all 7,000 functions, please check out our [Contributing Guide](CONTRIBUTING.md).
+We love open-source contributions! Whether you want to add an 8th domain, optimize the `scripts/generate-notion-tools.js` generator, or add TypeScript typings for all 7,000 functions, please check out our [Contributing Guide](CONTRIBUTING.md).
 
 ## License
 
