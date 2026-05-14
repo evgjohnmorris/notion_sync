@@ -1,14 +1,21 @@
 {
   "name": "notion_sync",
   "version": "1.0.0",
-  "description": "",
+  "description": "Enterprise-scale auto-generated Notion API integration library featuring 7,000 specialized utility functions.",
   "main": "src/tools/index.js",
   "scripts": {
-    "test": "node test.js"
+    "test": "node tests/test.js",
+    "generate": "node scripts/generate-notion-tools.js"
   },
-  "keywords": [],
-  "author": "",
-  "license": "ISC",
+  "keywords": [
+    "notion",
+    "api",
+    "sdk",
+    "integration",
+    "enterprise"
+  ],
+  "author": "Open Source Contributors",
+  "license": "MIT",
   "type": "commonjs",
   "dependencies": {
     "@notionhq/client": "^5.17.0",
