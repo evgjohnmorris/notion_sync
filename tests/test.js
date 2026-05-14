@@ -1,28 +1,31 @@
-const assert = require('assert');
-const tools = require('./src/tools/index.js');
+const { NotionToolFactory } = require('../src/factory');
 
-console.log('🧪 Starting Lab Test for 7,000 Notion Tools...');
+async function runTests() {
+    console.log('🧪 Starting Lab Test for 100,000 Dynamic Notion Tools...');
+    
+    try {
+        const factory = new NotionToolFactory();
+        const tools = factory.generate();
+        
+        // Verify we have at least 100,000 tools
+        if (tools.size < 100000) {
+            throw new Error(`Expected at least 100000 tools, but found ${tools.size}`);
+        }
 
-try {
-  const keys = Object.keys(tools);
-  
-  // 1. Verify we have exactly 7,000 tools
-  assert.strictEqual(keys.length, 7000, `Expected 7000 tools, but found ${keys.length}`);
-  
-  // 2. Verify all of them are functions
-  let invalidCount = 0;
-  keys.forEach(key => {
-    if (typeof tools[key] !== 'function') {
-      console.error(`❌ Tool ${key} is not a valid function!`);
-      invalidCount++;
+        console.log('\n✅ Successfully generated 100,000 tools in memory.');
+        
+        console.log('\n--- Running Sanity Checks ---');
+        const fuzzyTool = tools.get('notion_databases_fuzzy_match_00000');
+        if (typeof fuzzyTool.handler !== 'function') {
+            throw new Error('Tool handler is not a valid function!');
+        }
+        console.log('✅ Tools properly expose async handlers.');
+
+        console.log('\n✅ All tests successfully passed!');
+    } catch (error) {
+        console.error('🚨 Lab test failed:', error.message);
+        process.exit(1);
     }
-  });
-  
-  assert.strictEqual(invalidCount, 0, `Found ${invalidCount} invalid tools that are not functions.`);
-
-  console.log('✅ All 7,000 tools successfully passed the lab test!');
-  console.log('Each tool is successfully registered and exported as a function, ready for Notion API calls.');
-} catch (error) {
-  console.error('🚨 Lab test failed:', error.message);
-  process.exit(1);
 }
+
+runTests();

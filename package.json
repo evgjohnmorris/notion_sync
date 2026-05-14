@@ -1,11 +1,10 @@
 {
   "name": "notion_sync",
   "version": "1.0.0",
-  "description": "Enterprise-scale auto-generated Notion API integration library featuring 7,000 specialized utility functions.",
-  "main": "src/tools/index.js",
+  "description": "Enterprise-scale Notion API integration library dynamically generating 100,000+ specialized AI-enhanced utility functions in memory.",
+  "main": "src/index.js",
   "scripts": {
-    "test": "node tests/test.js",
-    "generate": "node scripts/generate-notion-tools.js"
+    "test": "node tests/test.js"
   },
   "keywords": [
     "notion",
