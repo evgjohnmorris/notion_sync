@@ -1,0 +1,14 @@
+/**
+ * Generated Tool: databasesTool_0902
+ * Domain: Databases
+ * ID: 0902
+ */
+exports.databasesTool_0902 = async (notionClient, params = {}) => {
+  try {
+    const response = await notionClient.databases.query(params);
+    return response;
+  } catch (error) {
+    console.error('Error in databasesTool_0902:', error);
+    throw error;
+  }
+};

@@ -1,0 +1,17 @@
+{
+  "name": "notion_sync",
+  "version": "1.0.0",
+  "description": "",
+  "main": "src/tools/index.js",
+  "scripts": {
+    "test": "node test.js"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "type": "commonjs",
+  "dependencies": {
+    "@notionhq/client": "^5.17.0",
+    "dotenv": "^17.4.2"
+  }
+}
