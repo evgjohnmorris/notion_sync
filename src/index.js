@@ -6,5 +6,6 @@ module.exports = {
   blocks: require('./domains/blocks'),
   databases: require('./domains/databases'),
   pages: require('./domains/pages'),
-  industry: require('./domains/industry')
+  industry: require('./domains/industry'),
+  finance: require('./domains/finance')
 };

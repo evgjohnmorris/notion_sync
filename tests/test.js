@@ -64,6 +64,32 @@ async function runTests() {
             throw new Error('Markdown parser generated incorrect block types.');
         }
         console.log('✅ Markdown-to-Blocks parser executed successfully.');
+
+        // Check finance tools
+        if (typeof notionSync.finance.currencyConverter !== 'function' || typeof notionSync.finance.ledgerSync !== 'function') {
+            throw new Error('Finance tools are missing!');
+        }
+
+        // Mock databases.query to return dummy data for currency converter
+        mockNotionClient.databases.query = async () => ({
+            results: [
+                { id: 'page-1', properties: { 'USD': { type: 'number', number: 100 } } },
+                { id: 'page-2', properties: { 'USD': { type: 'number', number: 250 } } }
+            ]
+        });
+
+        const currencyResult = await notionSync.finance.currencyConverter(mockNotionClient, 'db-123', 'USD', 'EUR', 0.9);
+        if (currencyResult.pages_updated !== 2) {
+            throw new Error('currencyConverter failed to update all pages.');
+        }
+        console.log('✅ currencyConverter executed successfully.');
+
+        const csvData = "Date,Description,Amount\n2023-10-01,Office Supplies,45.50\n2023-10-02,Software Subscription,99.00";
+        const ledgerResult = await notionSync.finance.ledgerSync(mockNotionClient, 'db-456', csvData);
+        if (ledgerResult.rows_synced !== 2) {
+            throw new Error('ledgerSync failed to sync all rows.');
+        }
+        console.log('✅ ledgerSync executed successfully.');
         
         console.log('\n✅ All tests successfully passed!');
     } catch (error) {
