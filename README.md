@@ -66,6 +66,48 @@ async function run() {
 run();
 ```
 
+## API Reference & Tools
+
+### Core Domains
+
+**Blocks** (`notionSync.blocks`)
+- `appendMarkdown`: Appends a Markdown string as Notion blocks.
+- `retrieve`: Retrieves a block by its ID.
+- `update`: Updates properties of an existing block.
+- `delete`: Deletes a specific block.
+
+**Databases** (`notionSync.databases`)
+- `queryWithSQL`: Queries a database using a standard SQL `WHERE` clause string.
+- `fuzzyQuery`: Queries a database by resolving its ID dynamically from a natural language name.
+
+**Pages** (`notionSync.pages`)
+- `createFuzzy`: Creates a new page by resolving the parent database ID dynamically via its name.
+- `updateFuzzy`: Updates a page by resolving its ID dynamically via its name.
+
+**Finance** (`notionSync.finance`)
+- `currencyConverter`: Fetches live exchange rates and converts currency values across a database.
+- `ledgerSync`: Syncs CSV data to a Notion database with duplicate prevention and optional chart generation.
+
+**Strategy** (`notionSync.strategy`)
+- `generateSWOT`: Generates a SWOT Analysis page (Strengths, Weaknesses, Opportunities, Threats) with context from Wikipedia.
+- `generatePESTEL`: Generates a PESTEL Analysis page (Political, Economic, Social, Technological, Environmental, Legal).
+- `generateOKR`: Generates an OKR Alignment page (Objectives and Key Results).
+- `generateLeanCanvas`: Generates a Lean Canvas 1-Page Business Model.
+- `generatePorterFiveForces`: Generates a Porter's Five Forces Industry Analysis page.
+
+**Visualization** (`notionSync.visualization`)
+- `generateChartBlock`: Generates external charts (via QuickChart) and returns a valid Notion Image block.
+
+**Industry Macros** (`notionSync.industry`)
+Specialized out-of-the-box workflows for specific sectors:
+- Domains: `logistics`, `trade`, `import`, `export`, `brokerage`, `taxes`, `isoStandards`.
+- Methods: `smartCreate` and `smartUpdate` which simulate complex, multi-step workflows for autonomous AI agents.
+
+### AI Enhancements
+- **Fuzzy Match**: Resolves natural language names to Notion UUIDs via the Search API.
+- **Markdown Parser**: Parses simple Markdown into Notion Block JSON payloads.
+- **SQL Parser**: Converts simple SQL `WHERE` clauses into Notion's JSON filter format.
+
 ## Testing
 
 To verify the semantic API logic, run the automated lab tests:
