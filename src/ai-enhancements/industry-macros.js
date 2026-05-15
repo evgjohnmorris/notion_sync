@@ -3,6 +3,30 @@
  * Simulates complex, multi-step workflows for autonomous AI agents in specific sectors.
  */
 
+async function fetchCoords(locationName) {
+    try {
+        const res = await fetch(`https://nominatim.openstreetmap.org/search?q=${encodeURIComponent(locationName)}&format=json&limit=1`, {
+            headers: { 'User-Agent': 'NotionSyncCLI/1.0 (test@example.com)' }
+        });
+        const data = await res.json();
+        if (data && data.length > 0) return { lat: parseFloat(data[0].lat), lon: parseFloat(data[0].lon) };
+    } catch (e) {
+        console.warn(`Geocoding failed for ${locationName}: ${e.message}`);
+    }
+    return null;
+}
+
+function haversine(lat1, lon1, lat2, lon2) {
+    const R = 6371; // km
+    const dLat = (lat2 - lat1) * Math.PI / 180;
+    const dLon = (lon2 - lon1) * Math.PI / 180;
+    const a = Math.sin(dLat/2) * Math.sin(dLat/2) +
+              Math.cos(lat1 * Math.PI / 180) * Math.cos(lat2 * Math.PI / 180) * 
+              Math.sin(dLon/2) * Math.sin(dLon/2);
+    const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
+    return R * c;
+}
+
 async function handleIndustryMacro(notionClient, domain, enhancement, params) {
     console.log(`[Macro Engine] Intercepting ${enhancement} for domain: ${domain}`);
     
@@ -16,20 +40,38 @@ async function handleIndustryMacro(notionClient, domain, enhancement, params) {
         case 'Logistics':
             if (enhancement === 'smart_update') {
                 const trackingId = params.cargo_id || params.tracking_id || 'UNKNOWN';
-                const dest = params.destination || 'Hub';
+                const origin = params.origin || 'New York, NY';
+                const dest = params.destination || 'Los Angeles, CA';
                 
                 result.macro_executed = true;
+                
+                const originCoords = await fetchCoords(origin);
+                const destCoords = await fetchCoords(dest);
+                
+                let distance = 4000; // fallback km
+                if (originCoords && destCoords) {
+                    distance = haversine(originCoords.lat, originCoords.lon, destCoords.lat, destCoords.lon);
+                }
+                
+                // Assuming average transport speed of 80 km/h
+                const hoursToDest = distance / 80;
+                const etaMillis = Date.now() + (hoursToDest * 60 * 60 * 1000);
+                
                 result.workflow_steps = [
                     `Searched for Cargo ID: ${trackingId}`,
+                    `Geocoded origin (${origin}) and destination (${dest})`,
+                    `Calculated distance: ${distance.toFixed(2)} km`,
+                    `Calculated ETA based on average speed (80 km/h)`,
                     `Updated location to: ${dest}`,
-                    `Calculated new ETA based on traffic models`,
                     `Sent notification to receiving warehouse`
                 ];
                 result.final_state = {
                     tracking_id: trackingId,
                     status: 'In Transit',
+                    origin: origin,
                     destination: dest,
-                    eta: new Date(Date.now() + 86400000 * 2).toISOString() // ETA + 2 days
+                    distance_km: distance.toFixed(2),
+                    eta: new Date(etaMillis).toISOString()
                 };
             }
             break;
@@ -40,18 +82,33 @@ async function handleIndustryMacro(notionClient, domain, enhancement, params) {
                 const hsCode = params.hs_code || '0000.00.0000';
                 
                 result.macro_executed = true;
+                
+                const hsRegex = /^\d{4}\.\d{2}\.\d{4}$/;
+                const isValidFormat = hsRegex.test(hsCode);
+                
+                let dutyRate = 0.05; // 5% default
+                if (isValidFormat) {
+                    const prefix = parseInt(hsCode.substring(0, 2), 10);
+                    if (prefix >= 61 && prefix <= 63) dutyRate = 0.15; // Textiles
+                    else if (prefix >= 84 && prefix <= 85) dutyRate = 0.02; // Machinery
+                }
+
+                const shipmentValue = params.value || 10000;
+                const estimatedDuties = isValidFormat ? shipmentValue * dutyRate : 0;
+
                 result.workflow_steps = [
-                    `Validated HS Code ${hsCode} against global tariff schedule`,
+                    `Validated HS Code ${hsCode} format: ${isValidFormat ? 'Valid' : 'INVALID'}`,
+                    `Calculated tariff estimate based on prefix classification`,
                     `Created Customs Clearance draft for Shipment ${shipmentId}`,
-                    `Attached calculated tariff estimates`,
                     `Linked to Compliance Officer queue`
                 ];
                 result.final_state = {
                     clearance_id: `CLR-${Math.floor(Math.random() * 10000)}`,
                     shipment_id: shipmentId,
                     hs_code: hsCode,
-                    estimated_duties: '$1,250.00',
-                    status: 'Pending Review'
+                    hs_valid: isValidFormat,
+                    estimated_duties: `$${estimatedDuties.toFixed(2)}`,
+                    status: isValidFormat ? 'Pending Review' : 'Hold - Invalid HS Code'
                 };
             }
             break;
@@ -80,21 +137,34 @@ async function handleIndustryMacro(notionClient, domain, enhancement, params) {
             
         case 'Brokerage':
             if (enhancement === 'smart_update') {
-                const origin = params.origin || 'Factory';
-                const dest = params.destination || 'Port';
-                const weight = params.weight || '1000 kg';
+                const origin = params.origin || 'New York, NY';
+                const dest = params.destination || 'Los Angeles, CA';
+                const weightNum = params.weight_kg || 1000;
                 
                 result.macro_executed = true;
+                
+                const originCoords = await fetchCoords(origin);
+                const destCoords = await fetchCoords(dest);
+                
+                let distance = 500; // fallback
+                if (originCoords && destCoords) {
+                    distance = haversine(originCoords.lat, originCoords.lon, destCoords.lat, destCoords.lon);
+                }
+                
+                // Quote: $1.50 per km + $0.05 per kg per 100km
+                const quote = (1.5 * distance) + (0.05 * weightNum * (distance / 100));
+
                 result.workflow_steps = [
-                    `Calculated distance from ${origin} to ${dest}`,
-                    `Factored weight class ${weight} into pricing model`,
-                    `Queried current fuel surcharges`,
+                    `Geocoded ${origin} and ${dest}`,
+                    `Calculated Haversine distance: ${distance.toFixed(2)} km`,
+                    `Factored weight class ${weightNum}kg into pricing model`,
                     `Generated Freight Quote RFQ Response`
                 ];
                 result.final_state = {
                     quote_id: `QT-${Date.now().toString().slice(-6)}`,
                     route: `${origin} -> ${dest}`,
-                    rate: '$4,500.00',
+                    distance_km: distance.toFixed(2),
+                    rate: `$${quote.toFixed(2)}`,
                     valid_until: new Date(Date.now() + 86400000 * 7).toISOString() // + 7 days
                 };
             }
@@ -105,22 +175,25 @@ async function handleIndustryMacro(notionClient, domain, enhancement, params) {
                 const companyId = params.company_id || 'COMP-DEFAULT';
                 const quarter = params.quarter || 'Q3-2026';
                 const revenue = params.revenue_estimate || 5000000;
+                const state = params.state || 'CA';
                 
-                // Advanced simulated calculation and payload assembly
-                const estimatedDeductions = revenue * 0.45; // Simulated 45% expense ratio
+                const stateTaxRates = { 'CA': 0.0884, 'TX': 0.0, 'NY': 0.0725, 'FL': 0.055, 'IL': 0.095 };
+                const stateRate = stateTaxRates[state] !== undefined ? stateTaxRates[state] : 0.05;
+                
+                const estimatedDeductions = revenue * 0.45; // 45% expense ratio
                 const taxableIncome = revenue - estimatedDeductions;
                 const federalRate = 0.21;
-                const stateRate = 0.08;
                 
                 const federalLiability = taxableIncome * federalRate;
                 const stateLiability = taxableIncome * stateRate;
                 const totalLiability = federalLiability + stateLiability;
+                const effectiveRate = (totalLiability / taxableIncome) * 100;
                 
                 result.macro_executed = true;
                 result.workflow_steps = [
                     `Fetched real-time ledger balance for company: ${companyId}`,
                     `Calculated estimated deductions ($${estimatedDeductions.toLocaleString()}) against gross revenue ($${revenue.toLocaleString()})`,
-                    `Applied blended Federal (21%) and State (8%) statutory rates to taxable base`,
+                    `Applied blended Federal (21%) and State (${state} - ${(stateRate*100).toFixed(2)}%) statutory rates to taxable base`,
                     `Generated comprehensive Quarterly Tax Provision Payload for Notion Database insertion`
                 ];
                 
@@ -178,7 +251,7 @@ async function handleIndustryMacro(notionClient, domain, enhancement, params) {
                             paragraph: {
                                 rich_text: [
                                     { type: 'text', text: { content: 'Based on estimated deductions, the effective tax rate is approximated at ' } },
-                                    { type: 'text', text: { content: '29%', link: null }, annotations: { bold: true } },
+                                    { type: 'text', text: { content: `${effectiveRate.toFixed(1)}%`, link: null }, annotations: { bold: true } },
                                     { type: 'text', text: { content: ' for this period. Please verify state apportionment factors before finalized filing.' } }
                                 ]
                             }

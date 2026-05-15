@@ -3,6 +3,9 @@
   "version": "1.0.0",
   "description": "Enterprise-scale Notion API integration library dynamically generating 100,000+ specialized AI-enhanced utility functions in memory.",
   "main": "src/index.js",
+  "bin": {
+    "notion-sync": "./bin/notion-sync.js"
+  },
   "scripts": {
     "test": "node tests/test.js"
   },
@@ -18,6 +21,7 @@
   "type": "commonjs",
   "dependencies": {
     "@notionhq/client": "^5.17.0",
+    "commander": "^14.0.3",
     "dotenv": "^17.4.2"
   }
 }

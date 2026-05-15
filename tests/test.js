@@ -12,10 +12,9 @@ async function runTests() {
         }
         console.log('✅ Core domains are exported.');
 
-        // Mock Notion Client
         const mockNotionClient = {
             pages: {
-                create: async (payload) => payload,
+                create: async (payload) => ({ id: 'mock-page-id', ...payload }),
                 update: async (payload) => payload
             },
             databases: {
@@ -78,7 +77,7 @@ async function runTests() {
             ]
         });
 
-        const currencyResult = await notionSync.finance.currencyConverter(mockNotionClient, 'db-123', 'USD', 'EUR', 0.9);
+        const currencyResult = await notionSync.finance.currencyConverter(mockNotionClient, 'db-123', 'USD', 'EUR', 'EUR', 'USD');
         if (currencyResult.pages_updated !== 2) {
             throw new Error('currencyConverter failed to update all pages.');
         }
@@ -102,8 +101,90 @@ async function runTests() {
             throw new Error('ledgerSync (dynamic) failed to sync row.');
         }
 
-        console.log('✅ ledgerSync executed successfully.');
+        // Test Idempotency
+        mockNotionClient.databases.query = async () => ({
+            results: [
+                { 
+                    id: 'page-1', 
+                    properties: { 
+                        'Date': { date: { start: '2023-10-01' } },
+                        'Name': { title: [{ plain_text: 'Office Supplies' }] },
+                        'Amount': { number: 45.50 }
+                    } 
+                }
+            ],
+            has_more: false
+        });
         
+        const duplicateCsvData = "Date,Description,Amount\n2023-10-01,Office Supplies,45.50\n2023-10-02,Software Subscription,99.00";
+        const duplicateResult = await notionSync.finance.ledgerSync(mockNotionClient, 'db-dup', duplicateCsvData);
+        if (duplicateResult.rows_synced !== 1 || duplicateResult.rows_skipped !== 1) {
+            throw new Error('ledgerSync (idempotency) failed to skip duplicate row.');
+        }
+
+        console.log('✅ ledgerSync executed successfully.');
+
+        // Check strategy tools
+        if (
+            typeof notionSync.strategy.generateSWOT !== 'function' || 
+            typeof notionSync.strategy.generatePESTEL !== 'function' ||
+            typeof notionSync.strategy.generateOKR !== 'function' ||
+            typeof notionSync.strategy.generateLeanCanvas !== 'function' ||
+            typeof notionSync.strategy.generatePorterFiveForces !== 'function'
+        ) {
+            throw new Error('Strategy tools are missing!');
+        }
+
+        const swotResult = await notionSync.strategy.generateSWOT(mockNotionClient, 'db-strategy', 'TechNova');
+        if (!swotResult || !swotResult.id) {
+            throw new Error('generateSWOT failed to return a valid page payload.');
+        }
+        console.log('✅ generateSWOT executed successfully.');
+
+        const pestelResult = await notionSync.strategy.generatePESTEL(mockNotionClient, 'db-strategy', 'TechNova');
+        if (!pestelResult || !pestelResult.id) {
+            throw new Error('generatePESTEL failed to return a valid page payload.');
+        }
+        console.log('✅ generatePESTEL executed successfully.');
+
+        const okrResult = await notionSync.strategy.generateOKR(mockNotionClient, 'db-strategy', 'Q3 Launch', 'jane_doe');
+        if (!okrResult || !okrResult.id) {
+            throw new Error('generateOKR failed to return a valid page payload.');
+        }
+        console.log('✅ generateOKR executed successfully.');
+
+        const leanCanvasResult = await notionSync.strategy.generateLeanCanvas(mockNotionClient, 'db-strategy', 'Project Alpha');
+        if (!leanCanvasResult || !leanCanvasResult.id) {
+            throw new Error('generateLeanCanvas failed to return a valid page payload.');
+        }
+        console.log('✅ generateLeanCanvas executed successfully.');
+
+        const porterResult = await notionSync.strategy.generatePorterFiveForces(mockNotionClient, 'db-strategy', 'SaaS CRM Market');
+        if (!porterResult || !porterResult.id) {
+            throw new Error('generatePorterFiveForces failed to return a valid page payload.');
+        }
+        console.log('✅ generatePorterFiveForces executed successfully.');
+        
+        // Check visualization tool
+        if (typeof notionSync.visualization.generateChartBlock !== 'function') {
+            throw new Error('Visualization tools are missing!');
+        }
+        const chartBlock = await notionSync.visualization.generateChartBlock('bar', ['A', 'B'], [{ data: [1, 2] }], 'Test Chart');
+        if (chartBlock.type !== 'image' || !chartBlock.image.external.url.includes('quickchart.io')) {
+            throw new Error('generateChartBlock returned an invalid block payload.');
+        }
+        console.log('✅ generateChartBlock executed successfully.');
+        
+        // Check NotionSyncClient
+        if (typeof notionSync.NotionSyncClient !== 'function') {
+            throw new Error('NotionSyncClient is missing!');
+        }
+        const clientInstance = new notionSync.NotionSyncClient('dummy-token');
+        if (!clientInstance.pages.create || typeof clientInstance._wrapWithRetry !== 'function') {
+            throw new Error('NotionSyncClient failed to wrap methods properly.');
+        }
+        console.log('✅ NotionSyncClient instantiated and methods wrapped successfully.');
+
         console.log('\n✅ All tests successfully passed!');
     } catch (error) {
         console.error('🚨 Lab test failed:', error.message);

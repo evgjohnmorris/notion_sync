@@ -3,9 +3,12 @@
  * Exposes a semantic, enterprise-ready API leveraging AI enhancements.
  */
 module.exports = {
+  NotionSyncClient: require('./client'),
   blocks: require('./domains/blocks'),
   databases: require('./domains/databases'),
   pages: require('./domains/pages'),
   industry: require('./domains/industry'),
-  finance: require('./domains/finance')
+  finance: require('./domains/finance'),
+  strategy: require('./domains/strategy'),
+  visualization: require('./domains/visualization')
 };

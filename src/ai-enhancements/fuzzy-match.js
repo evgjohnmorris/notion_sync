@@ -5,12 +5,7 @@
 
 async function resolveNotionId(notionClient, query, type = 'database') {
     if (!notionClient) {
-        // Mock implementation for testing if client is null
-        console.log(`[Mock] Searching workspace for ${type} matching "${query}"...`);
-        // Simulated match delay
-        await new Promise(resolve => setTimeout(resolve, 50));
-        console.log(`[Mock] Best match found: 8b4c-9f1e-1234-abcd`);
-        return '8b4c-9f1e-1234-abcd';
+        throw new Error(`Notion client is required to perform fuzzy match for "${query}"`);
     }
 
     try {
