@@ -87,8 +87,21 @@ async function runTests() {
         const csvData = "Date,Description,Amount\n2023-10-01,Office Supplies,45.50\n2023-10-02,Software Subscription,99.00";
         const ledgerResult = await notionSync.finance.ledgerSync(mockNotionClient, 'db-456', csvData);
         if (ledgerResult.rows_synced !== 2) {
-            throw new Error('ledgerSync failed to sync all rows.');
+            throw new Error('ledgerSync (legacy) failed to sync all rows.');
         }
+
+        const dynamicCsvData = "Tx Date,Memo,Value,Category\n2023-10-03,Lunch,15.00,Meals";
+        const columnMapping = {
+            "Transaction Date": { csvHeader: "Tx Date", type: "date" },
+            "Transaction Name": { csvHeader: "Memo", type: "title" },
+            "Cost": { csvHeader: "Value", type: "number" },
+            "Tag": { csvHeader: "Category", type: "rich_text" }
+        };
+        const dynamicLedgerResult = await notionSync.finance.ledgerSync(mockNotionClient, 'db-789', dynamicCsvData, columnMapping);
+        if (dynamicLedgerResult.rows_synced !== 1) {
+            throw new Error('ledgerSync (dynamic) failed to sync row.');
+        }
+
         console.log('✅ ledgerSync executed successfully.');
         
         console.log('\n✅ All tests successfully passed!');
