@@ -1,6 +1,6 @@
 # Contributing to Notion Sync
 
-Thank you for your interest in contributing to Notion Sync! We welcome contributions from the community to help improve and expand this 7,000+ utility function enterprise-scale Notion library.
+Thank you for your interest in contributing to Notion Sync! We welcome contributions from the community to help improve and expand this 100,000+ utility function enterprise-scale Notion library.
 
 ## Getting Started
 
@@ -12,8 +12,8 @@ Thank you for your interest in contributing to Notion Sync! We welcome contribut
 ## Making Changes
 
 - Create a new branch for your feature or bugfix (`git checkout -b feature/your-feature-name`).
-- If you're modifying or adding tools, please note that many tools are generated programmatically via `scripts/generate-notion-tools.js`. If you need to make structural changes, modify the generator script rather than the generated files directly.
-- Ensure any new functionality is covered by tests in the `tests/` directory.
+- If you're modifying or adding tools, please note that all tools are generated dynamically in-memory via the `src/factory.js`. If you need to make structural changes or add new industry macros, modify the `NotionToolFactory` logic or the `src/ai-enhancements/industry-macros.js` rather than generating files.
+- Ensure any new functionality is covered by tests in `test-factory.js` and the `tests/` directory.
 
 ## Testing
 
