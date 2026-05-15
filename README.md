@@ -10,6 +10,7 @@ If you are looking for precision control over Notion with built-in AI enhancemen
 
 - **Semantic Domain API**: Clean and intuitive API structure targeting specific Notion capabilities and industry workflows.
 - **AI Enhancements**: 
+  - `appendMarkdown`: Automatically converts standard Markdown text into Notion's proprietary Block JSON payload.
   - `fuzzyQuery` / `createFuzzy`: Resolve target page/database IDs dynamically by name instead of static UUIDs.
   - `queryWithSQL`: Translate standard SQL `WHERE` clauses directly into Notion JSON filter payloads.
 - **Industry Macros**: Specialized out-of-the-box workflows for complex logic in specific sectors (`Trade`, `Logistics`, `Import`, `Export`, `Brokerage`, `Taxes`, and `ISO_Standards`).
@@ -41,13 +42,18 @@ async function run() {
     // Requires database ID and standard SQL string
     const dbResults = await notionSync.databases.queryWithSQL(notionClient, 'database-uuid', sqlQuery);
     
-    // 2. Fuzzy Matching for Pages
+    // 2. Markdown-to-Blocks Appending
+    // Automatically convert markdown into Notion's block schema and append it!
+    const markdownText = "## Summary\n- Item 1\n- Item 2";
+    await notionSync.blocks.appendMarkdown(notionClient, 'page-uuid', markdownText);
+
+    // 3. Fuzzy Matching for Pages
     // Create a page by providing the natural language name of the parent database!
     const fuzzyResult = await notionSync.pages.createFuzzy(notionClient, 'Q3 Marketing Tracker', {
         properties: { /* Notion Properties Payload */ }
     });
     
-    // 3. Industry-Specific Macros
+    // 4. Industry-Specific Macros
     // Execute a multi-step macro for calculating and logging Q3 tax provisions
     const taxesResult = await notionSync.industry.taxes.smartCreate(notionClient, {
         company_id: 'Acme Corp',
