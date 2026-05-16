@@ -2,6 +2,9 @@
 
 ![Notion](https://img.shields.io/badge/Notion-000000?style=for-the-badge&logo=notion&logoColor=white) ![NodeJS](https://img.shields.io/badge/Node.js-43853D?style=for-the-badge&logo=node.js&logoColor=white)
 
+> **🚀 NextGen Architecture is in active development!**
+> We are building the next generation of this library (`notion_nextgen`), featuring Edge-compatible runtimes, pluggable AST caching, a robust ORM, and integrated React rendering. The `notion_nextgen` architecture will eventually be merged into this core repository.
+
 Welcome to the ultimate **Notion API Synchronization Library** for enterprise environments! This library provides an intuitive, domain-based semantic API wrapped around powerful AI enhancements to simplify complex Notion automation.
 
 If you are looking for precision control over Notion with built-in AI enhancements (Fuzzy Matching, SQL-to-Notion parsers, and Industry Macros), you have come to the right place.

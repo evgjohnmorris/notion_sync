@@ -2,6 +2,9 @@
 
 Thank you for your interest in contributing to Notion Sync! We welcome contributions from the community to help improve and expand this enterprise-scale Notion library.
 
+> **Note on NextGen Architecture**: We are currently experimenting with a new Monorepo architecture (`notion_nextgen`) featuring AST parsing, React integration, and Edge-runtime support. If you are interested in contributing to the future of this library, please check out that codebase as well!
+
+
 ## Getting Started
 
 1. **Fork the Repository**: Start by forking the repository to your own GitHub account.
